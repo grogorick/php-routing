@@ -1,0 +1,112 @@
+<?php namespace Grogorick\PhpRouting;
+
+$REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'], -1, PREG_SPLIT_NO_EMPTY);
+
+$METHOD = $_SERVER['REQUEST_METHOD'];
+
+$DATA = null;
+switch ($METHOD) {
+  case 'POST':
+    $DATA = $_POST;
+  case 'GET':
+    $DATA = $_GET;
+  // case 'PUT':
+  // case 'PATCH':
+  // case 'DELETE':
+  default:
+    parse_str(file_get_contents('php://input'), $DATA);
+    break;
+}
+
+
+const RESPONSE_OK = 200;
+const RESPONSE_OK_CREATED = 201;
+const RESPONSE_OK_NO_CONTENT = 204;
+const RESPONSE_BAD_REQUEST = 400;
+const RESPONSE_ERROR_NOT_FOUND = 404;
+const RESPONSE_ERROR_NOT_ALLOWED = 405;
+const RESPONSE_ERROR_CONFLICT = 409;
+const RESPONSE_NOT_IMPLEMENTED = 501;
+
+
+function Entity($actions)
+{
+  return array_merge_keep_first_values($actions, [
+      /* C */'POST' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
+      /* R */'GET' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED),
+      /* U */'PATCH' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED),
+      /* D */'DELETE' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED)
+    ]);
+}
+
+function Item($actions)
+{
+  return array_merge_keep_first_values($actions, [
+      /* C */'POST' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED),
+      /* R */'GET' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
+      /* U */'PATCH' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
+      /* D */'DELETE' => fn() => respond(RESPONSE_NOT_IMPLEMENTED)
+    ]);
+}
+
+function respond($response, $code = RESPONSE_OK)
+{
+  global $METHOD, $REQUEST;
+
+  header("Content-Type: application/json; charset=UTF-8");
+  http_response_code($code);
+
+  if (!is_null($response))
+    echo json_encode([
+      'request' => [$METHOD => $REQUEST],
+      'response' => $response
+    ]);
+  exit;
+}
+
+
+function route($routes)
+{
+  global $METHOD, $REQUEST, $DATA;
+
+  $current_request = current($REQUEST);
+
+  if ($current_request === false) {
+    foreach ($routes as $route => &$action) {
+      if (preg_match('/^[A-Z]+$/', $route)) {
+        if ($route === $METHOD) {
+          $action($DATA);
+          exit;
+        }
+      }
+    }
+    // method not defined for this route
+    respond(null, RESPONSE_BAD_REQUEST);
+  }
+
+  foreach ($routes as $route => &$subroutes) {
+    if ($route === $current_request) {
+      next($REQUEST);
+      route($subroutes);
+      exit;
+    }
+    else if (str_starts_with($route, '/') && str_ends_with($route, '/') && preg_match($route, $current_request, $matches)) {
+        $arg = $matches[0];
+        next($REQUEST);
+        route($subroutes($arg));
+        exit;
+    }
+  }
+  // route not defined
+  respond(null, RESPONSE_BAD_REQUEST);
+}
+
+function array_merge_keep_first_values($arr1, $arr2)
+{
+  foreach ($arr2 as $key2 => $val2)
+    if (!array_key_exists($key2, $arr1))
+      $arr1[$key2] = $val2;
+  return $arr1;
+}
