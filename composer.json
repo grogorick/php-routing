@@ -1,0 +1,17 @@
+{
+    "name": "grogorick/php-routing",
+    "description": "Minimal PHP routing with zero dependencies",
+    "type": "library",
+    "autoload": {
+        "files": [
+            "src/routing.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Steve Grogorick",
+            "email": "steve@grogorick.de"
+        }
+    ],
+    "require": {}
+}
