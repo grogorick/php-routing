@@ -1,41 +1,108 @@
-# Minimal Routing
+# Minimal PHP Routing
 
-## Features
-- Define hierarchical routes in a simple associative array
-- Regex parsing for route parameters
-- Predefined http error response codes for invalid entity/item requests, e.g., `PUT /v1/accounts`
+Set callbacks for hierarchical routes in a simple associative array structure.
+
+## Setup
+```bash
+composer require grogorick/php-routing
+```
+
 
 ## Example
-``` PHP
-require('php-routing/routing.php');
+```PHP
+# api.php
+
+require_once 'vendor/autoload.php';
+use Grogorick\PhpRouting as R;
 
 ...
 
-function get_account($account_id) {
-  $account_data = ...
-  if ($account_data)
-    Route\respond($account_data);
+function get_feed($GET_data) {
+  $feed_data = ...
+  if ($feed_data)
+    R\respond($feed_data);
   else
-    Route\respond(null, Route\RESPONSE_ERROR_NOT_FOUND);
+    R\respond(null, R\RESPONSE_ERROR_NOT_FOUND);
 }
 
 ...
 
-Route\route([
+R\route([
   'v1' => [
-    'accounts' => Route\Entity([
+    'accounts' => R\Entity(
+    [
       'POST' => create_account,
-      'GET' => fn() => Route\respond('list accounts'),
-      '/\d+/' => fn($account_id) => Route\Item([
-        'GET' => fn() => get_account($account_id),
-        'PUT' => fn() => Route\respond('replace account ' . $account_id),
-        'PATCH' => fn() => Route\respond('update account ' . $account_id),
-        'DELETE' => fn() => Route\respond('delete account ' . $account_id)
-      ])
+      'GET' => fn() => R\respond('list accounts'),
+      '/\d+/' => fn($account_id) => R\Item(
+      [
+        /* POST => automatic http response code 405 (not allowed) */
+        'GET' => fn() => R\respond('get account ' . $account_id),
+        'PUT' => fn() => R\respond('replace account ' . $account_id),
+        'PATCH' => fn() => R\respond('update account ' . $account_id),
+        'DELETE' => fn() => R\respond('delete account ' . $account_id)
+      ]),
+      ...
     ]),
-    'feed' => Route\Entity([
-      'GET' => fn() => Route\respond('list feed')
-    ])
+    'feed' =>
+    [
+      'GET' => fn($GET_data) => get_feed($GET_data),
+    ],
+    ...
   ]
 ]);
 ```
+
+
+## Reference
+> `route($routes)`  
+> Main function to parse the current request URL and call the corresponding callback function.  
+> **$routes** (associative array)  
+> — route literal string => subroute array  
+> — route parameter regex => closure with parsed parameter as agument, returning a subroute array  
+> — request method (POST/GET/PUT/PATCH/DELETE) => callback function
+
+> `respond($response, $code = 200)`  
+  Helper function to output the retrieved response as JSON-encoded string, and set an optional status code.
+  Stops execution afterwards.  
+  **$response** (any) — JSON-serializable response object  
+  **$code** (int) — HTTP response status code
+
+> `Entity($subroutes)`  
+  `Item($subroutes)`  
+  Wrapper for subroutes array to generate recommended response status codes for undefined request methods.  
+  **$subroutes** — see *route($routes)*
+
+
+## URL Syntax Configuration
+### Short
+https<span>://</span>your-api.domain **/v1/accounts/42**
+```apacheconf
+# .htaccess
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /api.php/$1 [L,QSA]
+</IfModule>
+```
+
+### Medium
+https<span>://</span>your-api.domain **/api.php/v1/accounts/42**  
+*(pre-configured on most systems)*
+```apacheconf
+# httpd.conf
+<VirtualHost *:80>
+    ...
+    AcceptPathInfo On
+    ...
+</VirtualHost>
+```
+or
+```apacheconf
+# .htaccess
+AcceptPathInfo On
+```
+
+### Long
+https<span>://</span>your-api.domain **/api.php?request=/v1/accounts/42**  
+*(vanilla PHP)*
