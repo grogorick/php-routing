@@ -1,21 +1,32 @@
 <?php namespace Grogorick\PhpRouting;
 
-$REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'], -1, PREG_SPLIT_NO_EMPTY);
+class Routing
+{
+  public $METHOD = null;
+  public $DATA = null;
+  public $REQUEST = null;
 
-$METHOD = $_SERVER['REQUEST_METHOD'];
+  public static $INST = null;
+}
 
-$DATA = null;
-switch ($METHOD) {
-  case 'POST':
-    $DATA = $_POST;
-  case 'GET':
-    $DATA = $_GET;
-  // case 'PUT':
-  // case 'PATCH':
-  // case 'DELETE':
-  default:
-    parse_str(file_get_contents('php://input'), $DATA);
-    break;
+if (is_null(Routing::$INST)) {
+  Routing::$INST = new Routing;
+
+  Routing::$INST->REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'] ?? $_GET['request'], -1, PREG_SPLIT_NO_EMPTY);
+  Routing::$INST->METHOD = $_SERVER['REQUEST_METHOD'];
+
+  switch (Routing::$INST->METHOD) {
+    case 'POST':
+      Routing::$INST->DATA = $_POST;
+    case 'GET':
+      Routing::$INST->DATA = $_GET;
+    // case 'PUT':
+    // case 'PATCH':
+    // case 'DELETE':
+    default:
+      parse_str(file_get_contents('php://input'), Routing::$INST->DATA);
+      break;
+  }
 }
 
 
@@ -53,14 +64,12 @@ function Item($actions)
 
 function respond($response, $code = RESPONSE_OK)
 {
-  global $METHOD, $REQUEST;
-
   header("Content-Type: application/json; charset=UTF-8");
   http_response_code($code);
 
   if (!is_null($response))
     echo json_encode([
-      'request' => [$METHOD => $REQUEST],
+      'request' => [Routing::$INST->METHOD => Routing::$INST->REQUEST],
       'response' => $response
     ]);
   exit;
@@ -69,15 +78,13 @@ function respond($response, $code = RESPONSE_OK)
 
 function route($routes)
 {
-  global $METHOD, $REQUEST, $DATA;
-
-  $current_request = current($REQUEST);
+  $current_request = current(Routing::$INST->REQUEST);
 
   if ($current_request === false) {
     foreach ($routes as $route => &$action) {
       if (preg_match('/^[A-Z]+$/', $route)) {
-        if ($route === $METHOD) {
-          $action($DATA);
+        if ($route === Routing::$INST->METHOD) {
+          $action(Routing::$INST->DATA);
           exit;
         }
       }
@@ -88,13 +95,13 @@ function route($routes)
 
   foreach ($routes as $route => &$subroutes) {
     if ($route === $current_request) {
-      next($REQUEST);
+      next(Routing::$INST->REQUEST);
       route($subroutes);
       exit;
     }
     else if (str_starts_with($route, '/') && str_ends_with($route, '/') && preg_match($route, $current_request, $matches)) {
         $arg = $matches[0];
-        next($REQUEST);
+        next(Routing::$INST->REQUEST);
         route($subroutes($arg));
         exit;
     }
@@ -102,6 +109,7 @@ function route($routes)
   // route not defined
   respond(null, RESPONSE_BAD_REQUEST);
 }
+
 
 function array_merge_keep_first_values($arr1, $arr2)
 {
