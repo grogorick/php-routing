@@ -55,11 +55,11 @@ R\route([
 
 ## Reference
 > `route($routes)`  
-> Main function to parse the current request URL and call the corresponding callback function.  
-> **$routes** (associative array)  
-> — route literal string => subroute array  
-> — route parameter regex => closure with parsed parameter as agument, returning a subroute array  
-> — request method (POST/GET/PUT/PATCH/DELETE) => callback function
+  Main function to parse the current request URL and call the corresponding callback function.  
+  **$routes** (associative array)  
+  — route literal string => subroute array  
+  — route parameter regex => closure with parsed parameter as agument, returning a subroute array  
+  — request method (POST/GET/PUT/PATCH/DELETE) => callback function
 
 > `respond($response, $code = 200)`  
   Helper function to output the retrieved response as JSON-encoded string, and set an optional status code.
@@ -71,6 +71,16 @@ R\route([
   `Item($subroutes)`  
   Wrapper for subroutes array to generate recommended response status codes for undefined request methods.  
   **$subroutes** — see *route($routes)*
+
+> `set_response_headers($headers)`  
+  `add_response_header($header)`  
+  Replace/add headers that are automatically applied when using *respond(...)*.  
+  **$headers** (array) — headers to replace all default/previously set headers  
+  **$header** (string) — header to add
+>
+> **Default headers:**  
+  "Content-Type: application/json; charset=UTF-8"  
+  "Access-Control-Allow-Origin: *"
 
 
 ## URL Syntax Configuration
