@@ -7,7 +7,8 @@ class Routing
   public $REQUEST = null;
 
   public $HEADERS = [
-    'Content-Type: application/json; charset=UTF-8'
+    'Content-Type: application/json; charset=UTF-8',
+    'Access-Control-Allow-Origin: *'
   ];
 
   public static $INST = null;
