@@ -6,6 +6,10 @@ class Routing
   public $DATA = null;
   public $REQUEST = null;
 
+  public $HEADERS = [
+    'Content-Type: application/json; charset=UTF-8'
+  ];
+
   public static $INST = null;
 }
 
@@ -62,9 +66,23 @@ function Item($actions)
     ]);
 }
 
+
+function set_response_headers($headers)
+{
+  Routing::$INST->HEADERS = $headers;
+}
+
+function add_response_header($header)
+{
+  Routing::$INST->HEADERS[] = $header;
+}
+
+
 function respond($response, $code = RESPONSE_OK)
 {
-  header("Content-Type: application/json; charset=UTF-8");
+  foreach (Routing::$INST->HEADERS as $header)
+    header($header);
+
   http_response_code($code);
 
   if (!is_null($response))
