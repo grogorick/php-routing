@@ -35,35 +35,38 @@ if (is_null(Routing::$INST)) {
 }
 
 
-const RESPONSE_OK = 200;
-const RESPONSE_OK_CREATED = 201;
-const RESPONSE_OK_NO_CONTENT = 204;
-const RESPONSE_BAD_REQUEST = 400;
-const RESPONSE_ERROR_NOT_FOUND = 404;
-const RESPONSE_ERROR_NOT_ALLOWED = 405;
-const RESPONSE_ERROR_CONFLICT = 409;
-const RESPONSE_NOT_IMPLEMENTED = 501;
+class Response
+{
+  const OK = 200;
+  const OK_CREATED = 201;
+  const OK_NO_CONTENT = 204;
+  const BAD_REQUEST = 400;
+  const ERROR_NOT_FOUND = 404;
+  const ERROR_NOT_ALLOWED = 405;
+  const ERROR_CONFLICT = 409;
+  const NOT_IMPLEMENTED = 501;
+}
 
 
 function Entity($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
-      /* R */'GET' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED),
-      /* U */'PATCH' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED),
-      /* D */'DELETE' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED)
+      /* C */'POST' => fn() => respond(Response::NOT_IMPLEMENTED),
+      /* R */'GET' => fn() => respond(Response::NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond(Response::ERROR_NOT_ALLOWED),
+      /* U */'PATCH' => fn() => respond(Response::ERROR_NOT_ALLOWED),
+      /* D */'DELETE' => fn() => respond(Response::ERROR_NOT_ALLOWED)
     ]);
 }
 
 function Item($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond(RESPONSE_ERROR_NOT_ALLOWED),
-      /* R */'GET' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
-      /* U */'PATCH' => fn() => respond(RESPONSE_NOT_IMPLEMENTED),
-      /* D */'DELETE' => fn() => respond(RESPONSE_NOT_IMPLEMENTED)
+      /* C */'POST' => fn() => respond(Response::ERROR_NOT_ALLOWED),
+      /* R */'GET' => fn() => respond(Response::NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond(Response::NOT_IMPLEMENTED),
+      /* U */'PATCH' => fn() => respond(Response::NOT_IMPLEMENTED),
+      /* D */'DELETE' => fn() => respond(Response::NOT_IMPLEMENTED)
     ]);
 }
 
@@ -79,7 +82,7 @@ function add_response_header($header)
 }
 
 
-function respond($response, $code = RESPONSE_OK)
+function respond($response, $code = Response::OK)
 {
   foreach (Routing::$INST->HEADERS as $header)
     header($header);
@@ -109,7 +112,7 @@ function route($routes)
       }
     }
     // method not defined for this route
-    respond(null, RESPONSE_BAD_REQUEST);
+    respond(null, Response::BAD_REQUEST);
   }
 
   foreach ($routes as $route => &$subroutes) {
@@ -126,7 +129,7 @@ function route($routes)
     }
   }
   // route not defined
-  respond(null, RESPONSE_BAD_REQUEST);
+  respond(null, Response::BAD_REQUEST);
 }
 
 

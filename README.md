@@ -22,7 +22,7 @@ function get_feed($GET_data) {
   if ($feed_data)
     R\respond($feed_data);
   else
-    R\respond(null, R\RESPONSE_ERROR_NOT_FOUND);
+    R\respond(null, R\Response::ERROR_NOT_FOUND);
 }
 
 ...
