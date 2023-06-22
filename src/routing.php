@@ -10,6 +10,9 @@ class Routing
     'Content-Type: application/json; charset=UTF-8',
     'Access-Control-Allow-Origin: *'
   ];
+  public $OPTIONS = [
+    'include-request-in-response' => false
+  ];
 
   public static $INST = null;
 }
@@ -34,6 +37,12 @@ if (is_null(Routing::$INST)) {
   }
 }
 
+
+class Options
+{
+  /** Values: { true, false } */
+  const RESPONSE_INCLUDE_REQUEST = 'response-include-request';
+}
 
 class Response
 {
@@ -71,6 +80,12 @@ function Item($actions)
 }
 
 
+function set_options($options)
+{
+  Routing::$INST->OPTIONS = array_merge(Routing::$INST->OPTIONS, $options);
+}
+
+
 function set_response_headers($headers)
 {
   Routing::$INST->HEADERS = $headers;
@@ -89,11 +104,14 @@ function respond($response, $code = Response::OK)
 
   http_response_code($code);
 
-  if (!is_null($response))
-    echo json_encode([
-      'request' => [Routing::$INST->METHOD => Routing::$INST->REQUEST],
-      'response' => $response
-    ]);
+  if (!is_null($response)) {
+    $out = [ 'response' => $response ];
+
+    if (Routing::$INST->OPTIONS[Options::RESPONSE_INCLUDE_REQUEST])
+      $out['request'] = implode('/', [...Routing::$INST->REQUEST, Routing::$INST->METHOD]);
+
+    echo json_encode($out, JSON_UNESCAPED_SLASHES);
+  }
   exit;
 }
 

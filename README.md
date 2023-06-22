@@ -82,6 +82,10 @@ R\route([
   "Content-Type: application/json; charset=UTF-8"  
   "Access-Control-Allow-Origin: *"
 
+> `set_options($options)`  
+  Set options available in *\Options*.  
+  **$options** (associative array) — options to set, using values from *\Options* as array keys
+
 
 ## URL Syntax Configuration
 ### Short
