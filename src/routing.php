@@ -53,6 +53,7 @@ class Response
   const ERROR_NOT_FOUND = 404;
   const ERROR_NOT_ALLOWED = 405;
   const ERROR_CONFLICT = 409;
+  const INTERNAL_SERVER_ERROR = 500;
   const NOT_IMPLEMENTED = 501;
 }
 
@@ -124,7 +125,12 @@ function route($routes)
     foreach ($routes as $route => &$action) {
       if (preg_match('/^[A-Z]+$/', $route)) {
         if ($route === Routing::$INST->METHOD) {
-          $action(Routing::$INST->DATA);
+          if (is_callable($action))
+            $action(Routing::$INST->DATA);
+          else if (is_string($action) && function_exists($action))
+            call_user_func($action, Routing::$INST->DATA);
+          else
+            respond(null, Response::INTERNAL_SERVER_ERROR);
           exit;
         }
       }
