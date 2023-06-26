@@ -49,10 +49,12 @@ class Response
   const OK = 200;
   const OK_CREATED = 201;
   const OK_NO_CONTENT = 204;
+
   const BAD_REQUEST = 400;
-  const ERROR_NOT_FOUND = 404;
-  const ERROR_NOT_ALLOWED = 405;
-  const ERROR_CONFLICT = 409;
+  const NOT_FOUND = 404;
+  const NOT_ALLOWED = 405;
+  const CONFLICT = 409;
+
   const INTERNAL_SERVER_ERROR = 500;
   const NOT_IMPLEMENTED = 501;
 }
@@ -63,16 +65,16 @@ function Entity($actions)
   return array_merge_keep_first_values($actions, [
       /* C */'POST' => fn() => respond(Response::NOT_IMPLEMENTED),
       /* R */'GET' => fn() => respond(Response::NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond(Response::ERROR_NOT_ALLOWED),
-      /* U */'PATCH' => fn() => respond(Response::ERROR_NOT_ALLOWED),
-      /* D */'DELETE' => fn() => respond(Response::ERROR_NOT_ALLOWED)
+      /* U */'PUT' => fn() => respond(Response::NOT_ALLOWED),
+      /* U */'PATCH' => fn() => respond(Response::NOT_ALLOWED),
+      /* D */'DELETE' => fn() => respond(Response::NOT_ALLOWED)
     ]);
 }
 
 function Item($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond(Response::ERROR_NOT_ALLOWED),
+      /* C */'POST' => fn() => respond(Response::NOT_ALLOWED),
       /* R */'GET' => fn() => respond(Response::NOT_IMPLEMENTED),
       /* U */'PUT' => fn() => respond(Response::NOT_IMPLEMENTED),
       /* U */'PATCH' => fn() => respond(Response::NOT_IMPLEMENTED),
