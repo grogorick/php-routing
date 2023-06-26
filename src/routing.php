@@ -63,22 +63,22 @@ class Response
 function Entity($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond('Create route does not exist for this entity', Response::NOT_IMPLEMENTED),
-      /* R */'GET' => fn() => respond('List route does not exist for all instances of this entity', Response::NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond('Replace route does not exist for all instances of this entity', Response::NOT_ALLOWED),
-      /* U */'PATCH' => fn() => respond('Update route does not exist for all instances of this entity', Response::NOT_ALLOWED),
-      /* D */'DELETE' => fn() => respond('Delete route does not exist for all instances of this entity', Response::NOT_ALLOWED)
+      /* C */'POST' => fn() => respond('Create route does not exist for this entity.', Response::NOT_IMPLEMENTED),
+      /* R */'GET' => fn() => respond('List route does not exist for all instances of this entity.', Response::NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond('Replace route does not exist for all instances of this entity.', Response::NOT_ALLOWED),
+      /* U */'PATCH' => fn() => respond('Update route does not exist for all instances of this entity.', Response::NOT_ALLOWED),
+      /* D */'DELETE' => fn() => respond('Delete route does not exist for all instances of this entity.', Response::NOT_ALLOWED)
     ]);
 }
 
 function Item($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond('Create route does not exist for specific instances of this entity', Response::NOT_ALLOWED),
-      /* R */'GET' => fn() => respond('Get route does not exist for instances of this entity', Response::NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond('Replace route does not exist for instances of this entity', Response::NOT_IMPLEMENTED),
-      /* U */'PATCH' => fn() => respond('Update route does not exist for instances of this entity', Response::NOT_IMPLEMENTED),
-      /* D */'DELETE' => fn() => respond('Delete route does not exist for instances of this entity', Response::NOT_IMPLEMENTED)
+      /* C */'POST' => fn() => respond('Create route does not exist for specific instances of this entity.', Response::NOT_ALLOWED),
+      /* R */'GET' => fn() => respond('Get route does not exist for instances of this entity.', Response::NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond('Replace route does not exist for instances of this entity.', Response::NOT_IMPLEMENTED),
+      /* U */'PATCH' => fn() => respond('Update route does not exist for instances of this entity.', Response::NOT_IMPLEMENTED),
+      /* D */'DELETE' => fn() => respond('Delete route does not exist for instances of this entity.', Response::NOT_IMPLEMENTED)
     ]);
 }
 
@@ -132,12 +132,12 @@ function route($routes)
           else if (is_string($action) && function_exists($action))
             call_user_func($action, Routing::$INST->DATA);
           else
-            respond('Route configuration invalid', Response::INTERNAL_SERVER_ERROR);
+            respond('Route configuration invalid.', Response::INTERNAL_SERVER_ERROR);
           exit;
         }
       }
     }
-    respond('Method does not exist for this route', Response::BAD_REQUEST);
+    respond('Method does not exist for this route.', Response::BAD_REQUEST);
   }
 
   foreach ($routes as $route => &$subroutes) {
@@ -153,7 +153,7 @@ function route($routes)
         exit;
     }
   }
-  respond('Route does not exist', Response::BAD_REQUEST);
+  respond('Route does not exist.', Response::BAD_REQUEST);
 }
 
 
