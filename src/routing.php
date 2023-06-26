@@ -47,13 +47,10 @@ class Options
 class Response
 {
   const OK = 200;
-  const OK_CREATED = 201;
-  const OK_NO_CONTENT = 204;
 
   const BAD_REQUEST = 400;
   const NOT_FOUND = 404;
   const NOT_ALLOWED = 405;
-  const CONFLICT = 409;
 
   const INTERNAL_SERVER_ERROR = 500;
   const NOT_IMPLEMENTED = 501;
@@ -153,7 +150,7 @@ function route($routes)
         exit;
     }
   }
-  respond('Route does not exist.', Response::BAD_REQUEST);
+  respond('Route does not exist.', Response::NOT_FOUND);
 }
 
 
