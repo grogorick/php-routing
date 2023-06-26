@@ -108,7 +108,7 @@ function respond($response, $code = Response::OK)
   http_response_code($code);
 
   if (!is_null($response)) {
-    $out = [ 'response' => $response ];
+    $out = [ ((200 <= $code && $code <= 299) ? 'response' : 'error') => $response ];
 
     if (Routing::$INST->OPTIONS[Options::RESPONSE_INCLUDE_REQUEST])
       $out['request'] = implode('/', [...Routing::$INST->REQUEST, Routing::$INST->METHOD]);
