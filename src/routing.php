@@ -132,13 +132,12 @@ function route($routes)
           else if (is_string($action) && function_exists($action))
             call_user_func($action, Routing::$INST->DATA);
           else
-            respond(null, Response::INTERNAL_SERVER_ERROR);
+            respond('Route configuration invalid', Response::INTERNAL_SERVER_ERROR);
           exit;
         }
       }
     }
-    // method not defined for this route
-    respond(null, Response::BAD_REQUEST);
+    respond('Method does not exist for this route', Response::BAD_REQUEST);
   }
 
   foreach ($routes as $route => &$subroutes) {
@@ -154,8 +153,7 @@ function route($routes)
         exit;
     }
   }
-  // route not defined
-  respond(null, Response::BAD_REQUEST);
+  respond('Route does not exist', Response::BAD_REQUEST);
 }
 
 
