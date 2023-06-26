@@ -63,22 +63,22 @@ class Response
 function Entity($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond(Response::NOT_IMPLEMENTED),
-      /* R */'GET' => fn() => respond(Response::NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond(Response::NOT_ALLOWED),
-      /* U */'PATCH' => fn() => respond(Response::NOT_ALLOWED),
-      /* D */'DELETE' => fn() => respond(Response::NOT_ALLOWED)
+      /* C */'POST' => fn() => respond('Create route does not exist for this entity', Response::NOT_IMPLEMENTED),
+      /* R */'GET' => fn() => respond('List route does not exist for all instances of this entity', Response::NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond('Replace route does not exist for all instances of this entity', Response::NOT_ALLOWED),
+      /* U */'PATCH' => fn() => respond('Update route does not exist for all instances of this entity', Response::NOT_ALLOWED),
+      /* D */'DELETE' => fn() => respond('Delete route does not exist for all instances of this entity', Response::NOT_ALLOWED)
     ]);
 }
 
 function Item($actions)
 {
   return array_merge_keep_first_values($actions, [
-      /* C */'POST' => fn() => respond(Response::NOT_ALLOWED),
-      /* R */'GET' => fn() => respond(Response::NOT_IMPLEMENTED),
-      /* U */'PUT' => fn() => respond(Response::NOT_IMPLEMENTED),
-      /* U */'PATCH' => fn() => respond(Response::NOT_IMPLEMENTED),
-      /* D */'DELETE' => fn() => respond(Response::NOT_IMPLEMENTED)
+      /* C */'POST' => fn() => respond('Create route does not exist for specific instances of this entity', Response::NOT_ALLOWED),
+      /* R */'GET' => fn() => respond('Get route does not exist for instances of this entity', Response::NOT_IMPLEMENTED),
+      /* U */'PUT' => fn() => respond('Replace route does not exist for instances of this entity', Response::NOT_IMPLEMENTED),
+      /* U */'PATCH' => fn() => respond('Update route does not exist for instances of this entity', Response::NOT_IMPLEMENTED),
+      /* D */'DELETE' => fn() => respond('Delete route does not exist for instances of this entity', Response::NOT_IMPLEMENTED)
     ]);
 }
 
