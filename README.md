@@ -87,8 +87,28 @@ R\route([
   **$options** (associative array) — options to set, using values from *\Options* as array keys
 
 
-## URL Syntax Configuration
-### Short
+## Server Configuration
+### Additional Request Methods
+By default, most Apache configurations only allow *GET* and *POST* requests. Add the following to allow further methods (*PUT, PATCH, DELETE, HEAD, OPTIONS*).
+```apacheconf
+# .htaccess
+<Limit GET POST PUT PATCH DELETE HEAD OPTIONS>
+    Require all granted
+</Limit>
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS"
+```
+For this to work, the `httpd.conf` should include
+```apacheconf
+<VirtualHost ...>
+    <Directory ...>
+        ...
+        AllowOverride All
+        ...
+```
+
+
+### URL Syntax
+#### Short
 https<span>://</span>your-api.domain **/v1/accounts/42**
 ```apacheconf
 # .htaccess
@@ -100,16 +120,15 @@ https<span>://</span>your-api.domain **/v1/accounts/42**
 </IfModule>
 ```
 
-### Medium
+#### Medium
 https<span>://</span>your-api.domain **/api.php/v1/accounts/42**  
 *(pre-configured on most systems)*
 ```apacheconf
 # httpd.conf
-<VirtualHost *:80>
+<VirtualHost ...>
     ...
     AcceptPathInfo On
     ...
-</VirtualHost>
 ```
 or
 ```apacheconf
@@ -117,6 +136,6 @@ or
 AcceptPathInfo On
 ```
 
-### Long
+#### Long
 https<span>://</span>your-api.domain **/api.php?request=/v1/accounts/42**  
 *(vanilla PHP)*
