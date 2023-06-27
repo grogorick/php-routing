@@ -4,6 +4,8 @@ class Options
 {
   /** Values: { true, false } */
   const RESPONSE_INCLUDE_REQUEST = 'response-include-request';
+  /** Values: { true, false } */
+  const IGNORE_HTTP_RESPONSE_STATUS_CODES = 'ignore-http-response-status-codes';
 }
 
 class Response
@@ -30,7 +32,8 @@ class Routing
     'Access-Control-Allow-Origin: *'
   ];
   public $OPTIONS = [
-    Options::RESPONSE_INCLUDE_REQUEST => false
+    Options::RESPONSE_INCLUDE_REQUEST => false,
+    Options::IGNORE_HTTP_RESPONSE_STATUS_CODES => false
   ];
 
   public static $INST = null;
@@ -103,7 +106,8 @@ function respond($response, $code = Response::OK)
     foreach (Routing::$INST->HEADERS as $header)
       header($header);
 
-    http_response_code($code);
+    if (!Routing::$INST->OPTIONS[Options::IGNORE_HTTP_RESPONSE_STATUS_CODES])
+      http_response_code($code);
   }
 
   if (!is_null($response)) {
