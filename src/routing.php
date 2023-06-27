@@ -99,10 +99,12 @@ function add_response_header($header)
 
 function respond($response, $code = Response::OK)
 {
-  foreach (Routing::$INST->HEADERS as $header)
-    header($header);
+  if (!headers_sent($filename, $linenum)) {
+    foreach (Routing::$INST->HEADERS as $header)
+      header($header);
 
-  http_response_code($code);
+    http_response_code($code);
+  }
 
   if (!is_null($response)) {
     $out = [ ((200 <= $code && $code <= 299) ? 'response' : 'error') => $response ];
