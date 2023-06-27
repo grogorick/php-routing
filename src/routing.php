@@ -127,8 +127,6 @@ function route($routes)
       if (preg_match('/^[A-Z]+$/', $route)) {
         if ($route === Routing::$INST->METHOD) {
           if (is_callable($action))
-            $action(Routing::$INST->DATA);
-          else if (is_string($action) && function_exists($action))
             call_user_func($action, Routing::$INST->DATA);
           else
             respond('Route configuration invalid.', Response::INTERNAL_SERVER_ERROR);
@@ -148,7 +146,7 @@ function route($routes)
     else if (str_starts_with($route, '/') && str_ends_with($route, '/') && preg_match($route, $current_request, $matches)) {
         $arg = $matches[0];
         next(Routing::$INST->REQUEST);
-        route($subroutes($arg));
+        route(call_user_func($subroutes, $arg));
         exit;
     }
   }
