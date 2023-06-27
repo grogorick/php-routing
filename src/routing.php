@@ -1,5 +1,24 @@
 <?php namespace Grogorick\PhpRouting;
 
+class Options
+{
+  /** Values: { true, false } */
+  const RESPONSE_INCLUDE_REQUEST = 'response-include-request';
+}
+
+class Response
+{
+  const OK = 200;
+
+  const BAD_REQUEST = 400;
+  const NOT_FOUND = 404;
+  const NOT_ALLOWED = 405;
+
+  const INTERNAL_SERVER_ERROR = 500;
+  const NOT_IMPLEMENTED = 501;
+}
+
+
 class Routing
 {
   public $METHOD = null;
@@ -11,7 +30,7 @@ class Routing
     'Access-Control-Allow-Origin: *'
   ];
   public $OPTIONS = [
-    'include-request-in-response' => false
+    Options::RESPONSE_INCLUDE_REQUEST => false
   ];
 
   public static $INST = null;
@@ -35,25 +54,6 @@ if (is_null(Routing::$INST)) {
       parse_str(file_get_contents('php://input'), Routing::$INST->DATA);
       break;
   }
-}
-
-
-class Options
-{
-  /** Values: { true, false } */
-  const RESPONSE_INCLUDE_REQUEST = 'response-include-request';
-}
-
-class Response
-{
-  const OK = 200;
-
-  const BAD_REQUEST = 400;
-  const NOT_FOUND = 404;
-  const NOT_ALLOWED = 405;
-
-  const INTERNAL_SERVER_ERROR = 500;
-  const NOT_IMPLEMENTED = 501;
 }
 
 
