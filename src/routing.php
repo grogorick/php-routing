@@ -135,7 +135,7 @@ function respond($response, $code = Response::OK)
     $out = [ ((200 <= $code && $code <= 299) ? 'response' : 'error') => $response ];
 
     if (Routing::$INST->OPTIONS[Options::RESPONSE_INCLUDE_REQUEST])
-      $out['request'] = implode('/', [...Routing::$INST->REQUEST, Routing::$INST->METHOD]);
+      $out['request'] = implode('/', Routing::$INST->REQUEST) . ' : ' . Routing::$INST->METHOD;
 
     echo json_encode($out, JSON_UNESCAPED_SLASHES);
   }
