@@ -48,8 +48,10 @@ if (is_null(Routing::$INST)) {
   switch (Routing::$INST->METHOD) {
     case 'POST':
       Routing::$INST->DATA = $_POST;
+      break;
     case 'GET':
       Routing::$INST->DATA = $_GET;
+      break;
     // case 'PUT':
     // case 'PATCH':
     // case 'DELETE':
