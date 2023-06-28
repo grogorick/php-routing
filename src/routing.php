@@ -2,12 +2,18 @@
 
 class Options
 {
-  /** Values: { 'json', 'text' } */
+  /** Values: ContentType::... */
   const REQUEST_CONTENT_TYPE = 'request-content-type';
   /** Values: { true, false } */
   const RESPONSE_INCLUDE_REQUEST = 'response-include-request';
   /** Values: { true, false } */
   const IGNORE_HTTP_RESPONSE_STATUS_CODES = 'ignore-http-response-status-codes';
+}
+
+class ContentType
+{
+  const APPLICATION_JSON = 'application/json';
+  const MULTIPART_FORM_DATA = 'multipart/form-data';
 }
 
 class Response
@@ -34,7 +40,7 @@ class Routing
     'Access-Control-Allow-Origin: *'
   ];
   public $OPTIONS = [
-    Options::REQUEST_CONTENT_TYPE => 'json',
+    Options::REQUEST_CONTENT_TYPE => ContentType::APPLICATION_JSON,
     Options::RESPONSE_INCLUDE_REQUEST => false,
     Options::IGNORE_HTTP_RESPONSE_STATUS_CODES => false
   ];
@@ -71,13 +77,21 @@ function prepare()
     //   break;
   }
 
-  if (Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] === 'json') {
-    if (strpos(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json') === false)
-      respond('Request content-type must be application/json.', Response::BAD_REQUEST);
-    Routing::$INST->DATA = json_decode(Routing::$INST->DATA, true);
+  if (!empty(Routing::$INST->DATA)) {
+    if (strpos(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE]) === false)
+      respond('Request content-type `' . $_SERVER['CONTENT_TYPE'] . '` does not match required type `' . Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] . '`.', Response::BAD_REQUEST);
+
+    switch (Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE]) {
+      case ContentType::APPLICATION_JSON:
+        Routing::$INST->DATA = json_decode(Routing::$INST->DATA, true);
+        break;
+      case ContentType::MULTIPART_FORM_DATA:
+        parse_str(Routing::$INST->DATA, Routing::$INST->DATA);
+        break;
+      default:
+        respond('API configuration error. Request content-type `' . Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] . '` not supported.', Response::BAD_REQUEST);
+    }
   }
-  else
-    parse_str(Routing::$INST->DATA, Routing::$INST->DATA);
 }
 
 
