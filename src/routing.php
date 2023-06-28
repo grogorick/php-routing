@@ -36,11 +36,17 @@ class Routing
     Options::IGNORE_HTTP_RESPONSE_STATUS_CODES => false
   ];
 
-  public static $INST = null;
+  public static $INST;
+  public $prepared = false;
 }
+Routing::$INST = new Routing;
 
-if (is_null(Routing::$INST)) {
-  Routing::$INST = new Routing;
+
+function prepare()
+{
+  if (Routing::$INST->prepared)
+    return;
+  Routing::$INST->prepared = true;
 
   Routing::$INST->REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'] ?? $_GET['request'], -1, PREG_SPLIT_NO_EMPTY);
   Routing::$INST->METHOD = $_SERVER['REQUEST_METHOD'];
@@ -126,6 +132,7 @@ function respond($response, $code = Response::OK)
 
 function route($routes)
 {
+  prepare();
   $current_request = current(Routing::$INST->REQUEST);
 
   if ($current_request === false) {
