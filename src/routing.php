@@ -2,6 +2,8 @@
 
 class Options
 {
+  /** Values: { 'json', 'text' } */
+  const REQUEST_CONTENT_TYPE = 'request-content-type';
   /** Values: { true, false } */
   const RESPONSE_INCLUDE_REQUEST = 'response-include-request';
   /** Values: { true, false } */
@@ -32,6 +34,7 @@ class Routing
     'Access-Control-Allow-Origin: *'
   ];
   public $OPTIONS = [
+    Options::REQUEST_CONTENT_TYPE => 'json',
     Options::RESPONSE_INCLUDE_REQUEST => false,
     Options::IGNORE_HTTP_RESPONSE_STATUS_CODES => false
   ];
@@ -51,20 +54,30 @@ function prepare()
   Routing::$INST->REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'] ?? $_GET['request'], -1, PREG_SPLIT_NO_EMPTY);
   Routing::$INST->METHOD = $_SERVER['REQUEST_METHOD'];
 
+  Routing::$INST->DATA = file_get_contents('php://input');
   switch (Routing::$INST->METHOD) {
     case 'POST':
-      Routing::$INST->DATA = $_POST;
+      if (!empty($_POST))
+        Routing::$INST->DATA = $_POST;
       break;
     case 'GET':
-      Routing::$INST->DATA = $_GET;
+      if (!empty($_GET))
+        Routing::$INST->DATA = $_GET;
       break;
     // case 'PUT':
     // case 'PATCH':
     // case 'DELETE':
-    default:
-      parse_str(file_get_contents('php://input'), Routing::$INST->DATA);
-      break;
+    // default:
+    //   break;
   }
+
+  if (Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] === 'json') {
+    if (strpos(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json') === false)
+      respond('Request content-type must be application/json.', Response::BAD_REQUEST);
+    Routing::$INST->DATA = json_decode(Routing::$INST->DATA, true);
+  }
+  else
+    parse_str(Routing::$INST->DATA, Routing::$INST->DATA);
 }
 
 
