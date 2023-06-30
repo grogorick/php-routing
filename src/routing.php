@@ -57,7 +57,7 @@ function prepare()
     return;
   Routing::$INST->prepared = true;
 
-  Routing::$INST->REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'] ?? $_GET['request'], -1, PREG_SPLIT_NO_EMPTY);
+  Routing::$INST->REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'] ?? $_GET['request'] ?? '', -1, PREG_SPLIT_NO_EMPTY);
   Routing::$INST->METHOD = $_SERVER['REQUEST_METHOD'];
 
   Routing::$INST->DATA = file_get_contents('php://input');
@@ -149,7 +149,7 @@ function respond($response, $code = Response::OK)
     $out = [ ((200 <= $code && $code <= 299) ? 'response' : 'error') => $response ];
 
     if (Routing::$INST->OPTIONS[Options::RESPONSE_INCLUDE_REQUEST])
-      $out['request'] = implode('/', Routing::$INST->REQUEST) . ' : ' . Routing::$INST->METHOD;
+      $out['request'] = '/' . implode('/', Routing::$INST->REQUEST) . ' : ' . Routing::$INST->METHOD;
 
     echo json_encode($out, JSON_UNESCAPED_SLASHES);
   }
