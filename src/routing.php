@@ -35,10 +35,7 @@ class Routing
   public $DATA = null;
   public $REQUEST = null;
 
-  public $HEADERS = [
-    'Content-Type: application/json; charset=UTF-8',
-    'Access-Control-Allow-Origin: *'
-  ];
+  public $HEADERS = [];
   public $OPTIONS = [
     Options::REQUEST_CONTENT_TYPE => ContentType::APPLICATION_JSON,
     Options::RESPONSE_INCLUDE_REQUEST => false,

@@ -77,10 +77,6 @@ R\route([
   Replace/add headers that are automatically applied when using *respond(...)*.  
   **$headers** (array) — headers to replace all default/previously set headers  
   **$header** (string) — header to add
->
-> **Default headers:**  
-  "Content-Type: application/json; charset=UTF-8"  
-  "Access-Control-Allow-Origin: *"
 
 > `set_options($options)`  
   Set options available in *\Options*.  
@@ -104,6 +100,22 @@ For this to work, the `httpd.conf` should include
         ...
         AllowOverride All
         ...
+```
+
+### Response Headers
+Response headers can be set either via PHP, which allows to set them dynamically, e.g., to support multiple specific origins:
+```PHP
+R\set_response_headers([
+  "Access-Control-Allow-Origin: $approved_request_origin",
+  'Access-Control-Allow-Headers: content-type',
+  'Content-Type: application/json; charset=UTF-8'
+]);
+```
+or via `.htaccess` if static settings are sufficient:
+```apacheconf
+Header always set Access-Control-Allow-Origin "https://your-app.domain"
+Header always set Access-Control-Allow-Headers "content-type"
+Header always set Content-Type "application/json; charset=UTF-8"
 ```
 
 
