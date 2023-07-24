@@ -34,6 +34,7 @@ class Routing
   public $METHOD = null;
   public $DATA = null;
   public $REQUEST = null;
+  public $SEARCH = null;
 
   public $HEADERS = [];
   public $OPTIONS = [
@@ -55,38 +56,27 @@ function prepare()
   Routing::$INST->prepared = true;
 
   Routing::$INST->REQUEST = preg_split('@/@', $_SERVER['PATH_INFO'] ?? $_GET['request'] ?? '', -1, PREG_SPLIT_NO_EMPTY);
+  Routing::$INST->SEARCH = $_GET;
   Routing::$INST->METHOD = $_SERVER['REQUEST_METHOD'];
 
-  Routing::$INST->DATA = file_get_contents('php://input');
-  switch (Routing::$INST->METHOD) {
-    case 'POST':
-      if (!empty($_POST))
-        Routing::$INST->DATA = $_POST;
-      break;
-    case 'GET':
-      if (!empty($_GET))
-        Routing::$INST->DATA = $_GET;
-      break;
-    // case 'PUT':
-    // case 'PATCH':
-    // case 'DELETE':
-    // default:
-    //   break;
-  }
+  if (!empty($_POST))
+    Routing::$INST->DATA = $_POST;
+  else {
+    Routing::$INST->DATA = file_get_contents('php://input');
+    if (!empty(Routing::$INST->DATA)) {
+      if (strpos(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE]) === false)
+        respond('Request content-type `' . $_SERVER['CONTENT_TYPE'] . '` does not match required type `' . Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] . '`.', Response::BAD_REQUEST);
 
-  if (!empty(Routing::$INST->DATA)) {
-    if (strpos(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE]) === false)
-      respond('Request content-type `' . $_SERVER['CONTENT_TYPE'] . '` does not match required type `' . Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] . '`.', Response::BAD_REQUEST);
-
-    switch (Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE]) {
-      case ContentType::APPLICATION_JSON:
-        Routing::$INST->DATA = json_decode(Routing::$INST->DATA, true);
-        break;
-      case ContentType::MULTIPART_FORM_DATA:
-        parse_str(Routing::$INST->DATA, Routing::$INST->DATA);
-        break;
-      default:
-        respond('API configuration error. Request content-type `' . Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] . '` not supported.', Response::BAD_REQUEST);
+      switch (Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE]) {
+        case ContentType::APPLICATION_JSON:
+          Routing::$INST->DATA = json_decode(Routing::$INST->DATA, true);
+          break;
+        case ContentType::MULTIPART_FORM_DATA:
+          parse_str(Routing::$INST->DATA, Routing::$INST->DATA);
+          break;
+        default:
+          respond('API configuration error. Request content-type `' . Routing::$INST->OPTIONS[Options::REQUEST_CONTENT_TYPE] . '` not supported.', Response::BAD_REQUEST);
+      }
     }
   }
 }
@@ -145,12 +135,31 @@ function respond($response, $code = Response::OK)
   if (!is_null($response)) {
     $out = [ ((200 <= $code && $code <= 299) ? 'response' : 'error') => $response ];
 
-    if (Routing::$INST->OPTIONS[Options::RESPONSE_INCLUDE_REQUEST])
-      $out['request'] = '/' . implode('/', Routing::$INST->REQUEST) . ' : ' . Routing::$INST->METHOD;
+    if (Routing::$INST->OPTIONS[Options::RESPONSE_INCLUDE_REQUEST]) {
+      $out['request'] =
+        '/' . implode('/', Routing::$INST->REQUEST) .
+        ' [ ' . implode(', ', array_map(
+          fn($k, $v) => $k . ' = ' . $v,
+          array_keys(Routing::$INST->SEARCH),
+          array_values(Routing::$INST->SEARCH))) .
+        ' ] ' .
+        Routing::$INST->METHOD;
+    }
 
     echo json_encode($out, JSON_UNESCAPED_SLASHES);
   }
   exit;
+}
+
+
+function DATA()
+{
+  return Routing::$INST->DATA;
+}
+
+function SEARCH()
+{
+  return Routing::$INST->SEARCH;
 }
 
 
@@ -164,7 +173,7 @@ function route($routes)
       if (preg_match('/^[A-Z]+$/', $route)) {
         if ($route === Routing::$INST->METHOD) {
           if (is_callable($action))
-            call_user_func($action, Routing::$INST->DATA);
+            call_user_func($action, Routing::$INST->DATA, Routing::$INST->SEARCH);
           else
             respond('Route configuration invalid.', Response::INTERNAL_SERVER_ERROR);
           exit;
