@@ -55,6 +55,20 @@ R\route([
 ```
 
 
+## Routes Array Syntax
+`route-literal => [subroutes array]`  
+static *route literal* string => *subroutes array*
+
+`/regex/ => subroutes function`  
+*regex* to match a URL parameter => *subroutes function* getting the parsed parameter, generating a subroutes array
+
+`(subroutes group) => subroutes function`  
+*subroutes group* name in parentheses => *subroutes function* generating a subroutes array
+
+`METHOD => callable`  
+request *METHOD* in full uppercase => action *callable* to be called for this route
+
+
 ## Reference
 > `route($routes)`  
   Main function to parse the current request URL and call the corresponding callback function.  
