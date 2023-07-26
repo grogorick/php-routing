@@ -168,6 +168,7 @@ function route($routes)
   prepare();
   $current_request = current(Routing::$INST->REQUEST);
 
+  // end of request path
   if ($current_request === false) {
     foreach ($routes as $route => &$action) {
       if (preg_match('/^[A-Z]+$/', $route)) {
@@ -184,16 +185,25 @@ function route($routes)
   }
 
   foreach ($routes as $route => &$subroutes) {
+    // path literal, e.g. /users/
     if ($route === $current_request) {
       next(Routing::$INST->REQUEST);
       route($subroutes);
       exit;
     }
-    else if (str_starts_with($route, '/') && str_ends_with($route, '/') && preg_match($route, $current_request, $matches)) {
-        $arg = $matches[0];
-        next(Routing::$INST->REQUEST);
-        route(call_user_func($subroutes, $arg));
-        exit;
+
+    // parameter regex, e.g. /\d+/
+    else if ($route[0] === '/' && $route[-1] === '/' && preg_match($route, $current_request, $matches)) {
+      $arg = $matches[0];
+      next(Routing::$INST->REQUEST);
+      route(call_user_func($subroutes, $arg));
+      exit;
+    }
+
+    // group, e.g. (authenticated)
+    else if ($route[0] === '(' && $route[-1] === ')') {
+      route(call_user_func($subroutes));
+      exit;
     }
   }
   respond('Route does not exist.', Response::NOT_FOUND);
