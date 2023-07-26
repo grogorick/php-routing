@@ -29,26 +29,28 @@ function get_feed($GET_data) {
 
 R\route([
   'v1' => [
-    'accounts' => R\Entity(
-    [
-      'POST' => create_account,
-      'GET' => fn() => R\respond('list accounts'),
-      '/\d+/' => fn($account_id) => R\Item(
-      [
-        /* POST => automatic http response code 405 (not allowed) */
-        'GET' => fn() => R\respond('get account ' . $account_id),
-        'PUT' => fn() => R\respond('replace account ' . $account_id),
-        'PATCH' => fn() => R\respond('update account ' . $account_id),
-        'DELETE' => fn() => R\respond('delete account ' . $account_id)
+    'sign-in' => [
+      'POST' => 'App\Auth\sign_in'
+    ],
+    '(authenticated)' => R\Check('App\Auth\verify_authorization_header', [
+      'accounts' => R\Entity([
+        'GET' => fn() => R\respond('list accounts'),
+        '/\d+/' => fn($account_id) => R\Item([
+          'GET' => fn() => R\respond('get account ' . $account_id),
+          'PUT' => fn() => R\respond('replace account ' . $account_id),
+          'PATCH' => fn() => R\respond('update account ' . $account_id),
+          'DELETE' => fn() => R\respond('delete account ' . $account_id)
+        ]),
+        ...
       ]),
+      'feed' => [
+        'GET' => fn($GET_data) => get_feed($GET_data),
+      ],
       ...
     ]),
-    'feed' =>
-    [
-      'GET' => fn($GET_data) => get_feed($GET_data),
-    ],
     ...
-  ]
+  ],
+  ...
 ]);
 ```
 
@@ -70,6 +72,11 @@ R\route([
 > `Entity($subroutes)`  
   `Item($subroutes)`  
   Wrapper for subroutes array to generate recommended response status codes for undefined request methods.  
+  **$subroutes** — see *route($routes)*
+
+> `Check($check, $subroutes)`  
+  Wrapper for subroutes array with restricted access.  
+  **$check** (callable) — callback function to check for access permission  
   **$subroutes** — see *route($routes)*
 
 > `set_response_headers($headers)`  
