@@ -105,6 +105,14 @@ function Item($actions)
 }
 
 
+function Check($check_fn, $actions)
+{
+  return function() use ($check_fn, $actions) {
+    return call_user_func($check_fn) ? $actions : [];
+  };
+}
+
+
 function set_options($options)
 {
   Routing::$INST->OPTIONS = array_merge(Routing::$INST->OPTIONS, $options);
