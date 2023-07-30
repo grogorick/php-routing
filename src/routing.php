@@ -35,6 +35,7 @@ class Routing
   public $DATA = null;
   public $REQUEST = null;
   public $SEARCH = null;
+  public $PARAMS = [];
 
   public $HEADERS = [];
   public $OPTIONS = [
@@ -202,10 +203,13 @@ function route($routes)
 
     // parameter regex, e.g. /\d+/
     else if ($route[0] === '/' && $route[-1] === '/' && preg_match($route, $current_request, $matches)) {
-      $arg = $matches[0];
-      Routing::$INST->PARAMS[] = $arg;
+      $param = $matches[0];
+      Routing::$INST->PARAMS[] = $param;
       next(Routing::$INST->REQUEST);
-      route(call_user_func($subroutes, $arg));
+      if (is_callable($subroutes))
+        route(call_user_func($subroutes, $param));
+      else
+        route($subroutes);
       exit;
     }
 
