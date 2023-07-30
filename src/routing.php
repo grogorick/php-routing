@@ -182,7 +182,7 @@ function route($routes)
       if (preg_match('/^[A-Z]+$/', $route)) {
         if ($route === Routing::$INST->METHOD) {
           if (is_callable($action))
-            call_user_func($action, Routing::$INST->DATA, Routing::$INST->SEARCH);
+            call_user_func($action, ...array_merge(Routing::$INST->PARAMS, [ Routing::$INST->DATA, Routing::$INST->SEARCH]));
           else
             respond('Route configuration invalid.', Response::INTERNAL_SERVER_ERROR);
           exit;
@@ -203,6 +203,7 @@ function route($routes)
     // parameter regex, e.g. /\d+/
     else if ($route[0] === '/' && $route[-1] === '/' && preg_match($route, $current_request, $matches)) {
       $arg = $matches[0];
+      Routing::$INST->PARAMS[] = $arg;
       next(Routing::$INST->REQUEST);
       route(call_user_func($subroutes, $arg));
       exit;
