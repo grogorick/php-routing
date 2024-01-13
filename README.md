@@ -83,14 +83,19 @@ request *METHOD* in full uppercase => action *callable* to be called for this ro
   **$response** (any) — JSON-serializable response object  
   **$code** (int) — HTTP response status code
 
-> `Entity($subroutes)`  
-  `Item($subroutes)`  
-  Wrapper for subroutes array to generate recommended response status codes for undefined request methods.  
-  **$subroutes** — see *route($routes)*
-
 > `Check($check, $subroutes)`  
   Wrapper for subroutes array with restricted access.  
   **$check** (callable) — callback function to check for access permission  
+  **$subroutes** — see *route($routes)*
+
+> `Param($convert, $subroutes)`  
+  Wrapper for subroutes array to convert a parsed url parameter.  
+  **$convert** (callable) — callback function to convert the latest parameter  
+  **$subroutes** — see *route($routes)*
+
+> `Entity($subroutes)`  
+  `Item($subroutes)`  
+  Wrapper for subroutes array to generate recommended response status codes for undefined request methods.  
   **$subroutes** — see *route($routes)*
 
 > `set_response_headers($headers)`  

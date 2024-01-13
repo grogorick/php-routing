@@ -106,11 +106,26 @@ function Item($actions)
 }
 
 
-function Check($check_fn, $actions)
+function Check($check_fn, $subroutes)
 {
-  return function() use ($check_fn, $actions) {
-    return call_user_func($check_fn) ? $actions : [];
+  return function() use ($check_fn, $subroutes) {
+    return call_user_func($check_fn) ? $subroutes : [];
   };
+}
+
+
+function Param($convert_fn, $subroutes)
+{
+  return function() use ($convert_fn, $subroutes) {
+    $i = count(Routing::$INST->PARAMS) - 1;
+    Routing::$INST->PARAMS[$i] = call_user_func($convert_fn, Routing::$INST->PARAMS[$i]);
+    return $subroutes;
+  };
+}
+
+function IntParam($subroutes)
+{
+  return Param('intval', $subroutes);
 }
 
 
