@@ -34,17 +34,26 @@ R\route([
     ],
     '(authenticated)' => R\Check('App\Auth\verify_authorization_header', [
       'accounts' => R\Entity([
+        'POST' => fn() => R\respond('create account'),
         'GET' => fn() => R\respond('list accounts'),
-        '/\d+/' => fn($account_id) => R\Item([
-          'GET' => fn() => R\respond('get account ' . $account_id),
-          'PUT' => fn() => R\respond('replace account ' . $account_id),
-          'PATCH' => fn() => R\respond('update account ' . $account_id),
-          'DELETE' => fn() => R\respond('delete account ' . $account_id)
+        '/\w+/' => fn($account_slug) => R\Item([
+          'GET' => fn() => R\respond('get account ' . $account_slug),
+          'PUT' => fn() => R\respond('replace account ' . $account_slug),
+          'PATCH' => fn() => R\respond('update account ' . $account_slug),
+          'DELETE' => fn() => R\respond('delete account ' . $account_slug)
+        ]),
+        ...
+      ]),
+      'posts' => R\Entity([
+        /* post_id */ '/\d+/' => R\IntParam([
+          'GET' => fn($post_id) => R\respond('get post ' . $post_id),
+          ...
         ]),
         ...
       ]),
       'feed' => [
         'GET' => fn($GET_data) => get_feed($GET_data),
+        ...
       ],
       ...
     ]),
@@ -68,13 +77,20 @@ static *route literal* string => *subroutes array*
 `METHOD => callable`  
 request *METHOD* in full uppercase => action *callable* to be called for this route
 
+<br>
+
+Action callables will be called with the following arguments:
+> *URL parameters* — in their order withing the respective route  
+*form data* — via `$_POST` or `file_get_contents('php://input')`  
+*search parameters* — via `$_GET`
+
 
 ## Reference
 > `route($routes)`  
   Main function to parse the current request URL and call the corresponding callback function.  
   **$routes** (associative array)  
   — route literal string => subroute array  
-  — route parameter regex => closure with parsed parameter as agument, returning a subroute array  
+  — route parameter regex => closure with parsed parameter as argument, returning a subroute array  
   — request method (POST/GET/PUT/PATCH/DELETE) => callback function
 
 > `respond($response, $code = 200)`  
@@ -88,9 +104,17 @@ request *METHOD* in full uppercase => action *callable* to be called for this ro
   **$check** (callable) — callback function to check for access permission  
   **$subroutes** — see *route($routes)*
 
+> `respond_error_if_no_other_route_matches($error)`  
+  Report error during `Check(...)` without directly stopping routing.  
+  **$error** (string) — error message
+
 > `Param($convert, $subroutes)`  
   Wrapper for subroutes array to convert a parsed url parameter.  
   **$convert** (callable) — callback function to convert the latest parameter  
+  **$subroutes** — see *route($routes)*
+
+> `IntParam($subroutes)`  
+  Shorthand for `Param('intval', $subroutes)`  
   **$subroutes** — see *route($routes)*
 
 > `Entity($subroutes)`  
