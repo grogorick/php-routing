@@ -36,6 +36,7 @@ class Routing
   public $REQUEST = null;
   public $SEARCH = null;
   public $PARAMS = [];
+  public $CHECK_ERRORS = [];
 
   public $HEADERS = [];
   public $OPTIONS = [
@@ -111,6 +112,11 @@ function Check($check_fn, $subroutes)
   return function() use ($check_fn, $subroutes) {
     return call_user_func($check_fn) ? $subroutes : [];
   };
+}
+
+function respond_error_if_no_other_route_matches($error)
+{
+  Routing::$INST->CHECK_ERRORS[] = $error;
 }
 
 
@@ -234,7 +240,13 @@ function route($routes)
       exit;
     }
   }
-  respond('Route does not exist.', Response::NOT_FOUND);
+  respond(
+    'Route does not exist.' . (
+      count(Routing::$INST->CHECK_ERRORS)
+      ? "\nFailed checks during routing:\n" . implode("\n", Routing::$INST->CHECK_ERRORS)
+      : ''
+    ),
+    Response::NOT_FOUND);
 }
 
 
