@@ -195,6 +195,11 @@ function SEARCH()
 
 function route($routes)
 {
+  _route($routes, false);
+}
+
+function _route($routes, $within_group)
+{
   prepare();
   $current_request = current(Routing::$INST->REQUEST);
 
@@ -218,7 +223,7 @@ function route($routes)
     // path literal, e.g. /users/
     if ($route === $current_request) {
       next(Routing::$INST->REQUEST);
-      route($subroutes);
+      _route($subroutes, false);
       exit;
     }
 
@@ -228,25 +233,25 @@ function route($routes)
       Routing::$INST->PARAMS[] = $param;
       next(Routing::$INST->REQUEST);
       if (is_callable($subroutes))
-        route(call_user_func($subroutes, $param));
+        _route(call_user_func($subroutes, $param), false);
       else
-        route($subroutes);
+        _route($subroutes, false);
       exit;
     }
 
     // group, e.g. (authenticated)
     else if ($route[0] === '(' && $route[-1] === ')') {
-      route(call_user_func($subroutes));
-      exit;
+      _route(call_user_func($subroutes), true);
     }
   }
-  respond(
-    'Route does not exist.' . (
-      count(Routing::$INST->CHECK_ERRORS)
-      ? "\nFailed checks during routing:\n" . implode("\n", Routing::$INST->CHECK_ERRORS)
-      : ''
-    ),
-    Response::NOT_FOUND);
+  if (!$within_group)
+    respond(
+      'Route does not exist.' . (
+        count(Routing::$INST->CHECK_ERRORS)
+        ? "\nFailed checks during routing:\n" . implode("\n", Routing::$INST->CHECK_ERRORS)
+        : ''
+      ),
+      Response::NOT_FOUND);
 }
 
 
